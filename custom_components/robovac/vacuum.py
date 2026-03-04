@@ -377,9 +377,19 @@ class RoboVacEntity(StateVacuumEntity):
         _LOGGER.info("Return home Pressed")
         await self.vacuum.async_set({"101": True})
 
-    async def async_start(self, **kwargs):
-        self._attr_mode = "auto"
-        await self.vacuum.async_set({"5": self.mode})
+    async def async_start(self, **kwargs: Any) -> None:
+        """Start the vacuum cleaner (emulated toggle)."""
+        if self.vacuum is None:
+            _LOGGER.error("Cannot start vacuum: vacuum not initialized")
+            return
+
+        # Only toggle if not already cleaning
+        if self.activity != VacuumActivity.CLEANING:
+            _LOGGER.debug("Emulated START via toggle")
+            await self.vacuum.async_set({
+                self._get_dps_code("START_PAUSE"):
+                    self.vacuum.getRoboVacCommandValue(RobovacCommand.START_PAUSE, "start")
+            })
 
     async def async_pause(self, **kwargs):
         await self.vacuum.async_set({"2": False})
