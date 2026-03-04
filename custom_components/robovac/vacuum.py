@@ -391,6 +391,24 @@ class RoboVacEntity(StateVacuumEntity):
                     self.vacuum.getRoboVacCommandValue(RobovacCommand.START_PAUSE, "start")
             })
 
+    async def async_pause(self, **kwargs: Any) -> None:
+        """Pause the vacuum cleaner (emulated toggle)."""
+        if self.vacuum is None:
+            _LOGGER.error("Cannot pause vacuum: vacuum not initialized")
+            return
+
+        # Only toggle if currently cleaning
+        if self.activity == VacuumActivity.CLEANING:
+            _LOGGER.debug("Emulated PAUSE via toggle")
+            await self.vacuum.async_set({
+                self._get_dps_code("START_PAUSE"):
+                    self.vacuum.getRoboVacCommandValue(RobovacCommand.START_PAUSE, "pause")
+            })
+
+    async def async_stop(self, **kwargs: Any) -> None:
+        """Stop the vacuum cleaner (dock)."""
+        await self.async_return_to_base()
+
     async def async_pause(self, **kwargs):
         await self.vacuum.async_set({"2": False})
 
